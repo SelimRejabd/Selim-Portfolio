@@ -19,17 +19,45 @@ export default function CustomCursor() {
 
     if (!ring || !dot) return;
 
+    const RING_RADIUS = 28; // half of 56px
+    const DOT_RADIUS = 3; // half of 6px
+
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
 
     let ringX = mouseX;
     let ringY = mouseY;
 
-    let ringScale = 1;
+    let ringScale = 2.0;
     let dotScale = 1;
 
     let visible = false;
     let hovered = false;
+
+    // ── style helpers ─────────────────────────────────────────────────────────
+
+    const setIdleStyles = () => {
+      ring.style.borderColor = "rgba(255,255,255,0.5)";
+      ring.style.background = "transparent";
+      ring.style.boxShadow = [
+        "0 0 0 0.5px rgba(0,0,0,0.15)",
+        // "inset 0 1px 0 rgba(255,255,255,0.18)",
+        // "inset 0 -1px 0 rgba(0,0,0,0.10)",
+      ].join(", ");
+    };
+
+    const setHoverStyles = () => {
+      ring.style.borderColor = "#c5a55e";
+      ring.style.background = "rgba(197,165,94,0.04)";
+      ring.style.boxShadow = [
+        "0 0 0 0.5px rgba(197,165,94,0.25)",
+        "0 0 28px rgba(197,165,94,0.22)",
+        "inset 0 1px 0 rgba(255,255,255,0.22)",
+        "inset 0 -1px 0 rgba(0,0,0,0.10)",
+      ].join(", ");
+    };
+
+    // ── visibility ────────────────────────────────────────────────────────────
 
     const showCursor = () => {
       if (!visible) {
@@ -45,54 +73,42 @@ export default function CustomCursor() {
       visible = false;
     };
 
+    // ── mouse events ──────────────────────────────────────────────────────────
+
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-
       showCursor();
     };
 
-    const onMouseEnter = () => {
-      showCursor();
-    };
-
-    const onMouseLeave = () => {
-      hideCursor();
-    };
+    const onMouseEnter = () => showCursor();
+    const onMouseLeave = () => hideCursor();
 
     const onMouseDown = () => {
-      ringScale = hovered ? 1.8 : 0.85;
-      dotScale = 0.8;
+      // ringScale = hovered ? 1.7 : 0.88;
+      dotScale = 0.75;
     };
 
     const onMouseUp = () => {
-      ringScale = hovered ? 2.2 : 1;
-      dotScale = hovered ? 1.4 : 1;
+      // ringScale = hovered ? 2.0 : 1;
+      dotScale = hovered ? 1.2 : 1;
     };
 
     const handleHoverStart = () => {
       hovered = true;
-
-      ringScale = 2.2;
-      dotScale = 1.4;
-
-      ring.style.borderColor = "#c5a55e";
-      ring.style.background = "rgba(197,165,94,0.08)";
-      ring.style.boxShadow =
-        "0 0 30px rgba(197,165,94,0.35), inset 0 0 15px rgba(197,165,94,0.15)";
+      ringScale = 2.0;
+      dotScale = 1.2;
+      setHoverStyles();
     };
 
     const handleHoverEnd = () => {
       hovered = false;
-
-      ringScale = 1;
+      // ringScale = 1;
       dotScale = 1;
-
-      ring.style.borderColor = "rgba(255,255,255,0.15)";
-      ring.style.background = "rgba(255,255,255,0.03)";
-      ring.style.boxShadow =
-        "0 0 20px rgba(197,165,94,0.15), inset 0 0 10px rgba(255,255,255,0.05)";
+      setIdleStyles();
     };
+
+    // ── RAF animation loop ────────────────────────────────────────────────────
 
     let animationFrame: number;
 
@@ -101,17 +117,19 @@ export default function CustomCursor() {
       ringY += (mouseY - ringY) * 0.18;
 
       ring.style.transform = `
-        translate3d(${ringX - 20}px, ${ringY - 20}px, 0)
+        translate3d(${ringX - RING_RADIUS}px, ${ringY - RING_RADIUS}px, 0)
         scale(${ringScale})
       `;
 
       dot.style.transform = `
-        translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)
+        translate3d(${mouseX - DOT_RADIUS}px, ${mouseY - DOT_RADIUS}px, 0)
         scale(${dotScale})
       `;
 
       animationFrame = requestAnimationFrame(animate);
     };
+
+    // ── interactive element wiring ────────────────────────────────────────────
 
     const interactiveElements = document.querySelectorAll(
       'a, button, input, textarea, select, [role="button"], [data-cursor]',
@@ -122,15 +140,13 @@ export default function CustomCursor() {
       el.addEventListener("mouseleave", handleHoverEnd);
     });
 
-    document.addEventListener("mousemove", onMouseMove, {
-      passive: true,
-    });
-
+    document.addEventListener("mousemove", onMouseMove, { passive: true });
     document.addEventListener("mouseenter", onMouseEnter);
     document.addEventListener("mouseleave", onMouseLeave);
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mouseup", onMouseUp);
 
+    setIdleStyles();
     animate();
 
     return () => {
@@ -151,42 +167,43 @@ export default function CustomCursor() {
 
   return (
     <>
+      {/* Lens ring — truly transparent with backdrop enhancement */}
       <div
         ref={ringRef}
         className="pointer-events-none fixed left-0 top-0 z-[9999] opacity-0"
         style={{
-          width: "40px",
-          height: "40px",
+          width: "56px",
+          height: "56px",
           borderRadius: "9999px",
-          border: "1px solid rgba(255,255,255,0.15)",
-          background: "rgba(255,255,255,0.03)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          boxShadow:
-            "0 0 20px rgba(197,165,94,0.15), inset 0 0 10px rgba(255,255,255,0.05)",
+          border: "1.5px solid rgba(255,255,255,0.5)",
+          background: "transparent",
+          // brightness/contrast/saturate on whatever is behind the ring
+          // creates the "looking through a lens" magnification perception
+          backdropFilter: "brightness(1.1) contrast(1.08) saturate(1.12)",
+          WebkitBackdropFilter: "brightness(1.1) contrast(1.08) saturate(1.12)",
           willChange: "transform",
           transition:
-            "opacity .3s ease, border-color .3s ease, background .3s ease, box-shadow .3s ease",
-          mixBlendMode: "difference",
+            "opacity .3s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease",
+          // no mixBlendMode — glass is transparent, not inverting
         }}
       />
 
+      {/* Centre dot */}
       <div
         ref={dotRef}
         className="pointer-events-none fixed left-0 top-0 z-[9999] opacity-0"
         style={{
-          width: "8px",
-          height: "8px",
+          width: "6px",
+          height: "6px",
           borderRadius: "9999px",
           background: "#c5a55e",
           boxShadow:
-            "0 0 12px rgba(197,165,94,.9), 0 0 25px rgba(197,165,94,.5)",
+            "0 0 8px rgba(197,165,94,.85), 0 0 18px rgba(197,165,94,.4)",
           willChange: "transform",
           transition: "opacity .3s ease",
-          mixBlendMode: "difference",
+          // no mixBlendMode — keeps dot gold on any background
         }}
       />
     </>
   );
 }
-  
