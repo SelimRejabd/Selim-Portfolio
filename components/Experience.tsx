@@ -1,16 +1,16 @@
 const experiences = [
   {
-    title: "Junior Software Engineer",
+    title: "Software Engineer",
     company: "Technovicinity Ltd.",
-    period: "August 2025 – Present",
+    period: "February 2026 – Present",
     location: "Dhaka, Bangladesh",
     description:
       "Developing and maintaining full-stack applications using React, Node.js, and AWS. Leading frontend architecture decisions and mentoring interns.",
   },
   {
-    title: "Software Engineer Intern",
+    title: "Junior Software Engineer",
     company: "Technovicinity Ltd.",
-    period: "February 2025 – July 2025",
+    period: "February 2025 – January 2026",
     location: "Dhaka, Bangladesh",
     description:
       "Contributed to production applications, implemented responsive UIs with React and Tailwind CSS, and integrated third-party services including Google Maps and payment gateways.",
